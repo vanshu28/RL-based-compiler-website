@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: rl-compiler-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DB: rl-compiler
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - rl-network
+
+  backend:
+    build: ./backend
+    container_name: rl-compiler-backend
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://admin:admin@mongodb:27017/rl-compiler
+      CORS_ORIGIN: http://localhost:3000
+      PORT: 5000
+    depends_on:
+      - mongodb
+    networks:
+      - rl-network
+    volumes:
+      - ./backend:/app/backend
+
+volumes:
+  mongodb_data:
+
+networks:
+  rl-network:
+    driver: bridge
