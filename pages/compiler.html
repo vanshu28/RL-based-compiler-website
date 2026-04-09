@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Compiler - Code Editor</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>🤖 RL Compiler</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="compiler.html" class="active">Compiler</a></li>
+                <li><a href="demo.html">Demos</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="compiler-container">
+        <div class="editor-section">
+            <div class="section-header">
+                <h3>Code Editor</h3>
+                <div class="editor-controls">
+                    <button id="clearBtn" class="btn-small">Clear</button>
+                    <button id="executeBtn" class="btn-small btn-primary">Execute</button>
+                </div>
+            </div>
+            <textarea id="codeEditor" placeholder="Write your RL code here...
+// Example: Q-Learning Algorithm
+class QLearningAgent {
+    constructor(states, actions) {
+        this.qTable = {};
+        this.learningRate = 0.1;
+        this.discountFactor = 0.95;
+        this.epsilon = 0.1;
+    }
+    
+    selectAction(state) {
+        if (Math.random() < this.epsilon) {
+            return Math.floor(Math.random() * 4);
+        }
+        // Greedy action selection
+        return 0;
+    }
+}
+
+let agent = new QLearningAgent(10, 4);
+console.log('Agent created successfully!');">// Write your RL code here...</textarea>
+        </div>
+
+        <div class="output-section">
+            <div class="section-header">
+                <h3>Output</h3>
+                <button id="clearOutputBtn" class="btn-small">Clear Output</button>
+            </div>
+            <div id="output" class="output-box">
+                <p class="info">Execute code to see output here...</p>
+            </div>
+        </div>
+    </div>
+
+    <section class="code-templates">
+        <div class="container">
+            <h3>Code Templates</h3>
+            <div class="template-grid">
+                <div class="template-card" onclick="loadTemplate('qlearning')">
+                    <h4>Q-Learning</h4>
+                    <p>Classic reinforcement learning algorithm</p>
+                </div>
+                <div class="template-card" onclick="loadTemplate('sarsa')">
+                    <h4>SARSA</h4>
+                    <p>State-Action-Reward-State-Action algorithm</p>
+                </div>
+                <div class="template-card" onclick="loadTemplate('policy-gradient')">
+                    <h4>Policy Gradient</h4>
+                    <p>Direct policy optimization</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 RL Compiler. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="../assets/js/compiler.js"></script>
+</body>
+</html>

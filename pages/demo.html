@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Compiler - Demos</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>🤖 RL Compiler</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="compiler.html">Compiler</a></li>
+                <li><a href="demo.html" class="active">Demos</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="demos">
+        <div class="container">
+            <h2>Learning Demos</h2>
+            <p class="section-subtitle">Explore interactive reinforcement learning demonstrations</p>
+
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>1. Grid World Navigation</h3>
+                        <span class="demo-level">Beginner</span>
+                    </div>
+                    <p>Agent learns to navigate a grid world using Q-Learning to reach the goal while avoiding obstacles.</p>
+                    <div class="demo-preview" id="gridDemo"></div>
+                    <button class="btn btn-small" onclick="runGridDemo()">Run Demo</button>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>2. Bandit Problem</h3>
+                        <span class="demo-level">Beginner</span>
+                    </div>
+                    <p>Explore the multi-armed bandit problem using epsilon-greedy exploration strategy.</p>
+                    <div class="demo-preview" id="banditDemo"></div>
+                    <button class="btn btn-small" onclick="runBanditDemo()">Run Demo</button>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>3. Cart Pole Balance</h3>
+                        <span class="demo-level">Intermediate</span>
+                    </div>
+                    <p>Train an agent to balance a pole on a moving cart using policy gradient methods.</p>
+                    <div class="demo-preview" id="cartPoleDemo"></div>
+                    <button class="btn btn-small" onclick="runCartPoleDemo()">Run Demo</button>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>4. Path Finding</h3>
+                        <span class="demo-level">Intermediate</span>
+                    </div>
+                    <p>Agent discovers optimal paths through a maze using value iteration algorithm.</p>
+                    <div class="demo-preview" id="pathfindingDemo"></div>
+                    <button class="btn btn-small" onclick="runPathfindingDemo()">Run Demo</button>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>5. Game Playing</h3>
+                        <span class="demo-level">Advanced</span>
+                    </div>
+                    <p>Deep Q-Network (DQN) learns to play a simple game through trial and error.</p>
+                    <div class="demo-preview" id="gameDemo"></div>
+                    <button class="btn btn-small" onclick="runGameDemo()">Run Demo</button>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>6. Robot Control</h3>
+                        <span class="demo-level">Advanced</span>
+                    </div>
+                    <p>Actor-Critic algorithm enables a simulated robot to learn continuous control.</p>
+                    <div class="demo-preview" id="robotDemo"></div>
+                    <button class="btn btn-small" onclick="runRobotDemo()">Run Demo</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="algo-reference">
+        <div class="container">
+            <h3>Algorithm Reference</h3>
+            <div class="reference-grid">
+                <div class="reference-item">
+                    <h4>Q-Learning</h4>
+                    <p>Off-policy algorithm that learns the value of actions in different states without requiring a model of the environment.</p>
+                </div>
+                <div class="reference-item">
+                    <h4>SARSA</h4>
+                    <p>On-policy algorithm that learns from the actual actions taken, including exploration actions.</p>
+                </div>
+                <div class="reference-item">
+                    <h4>Policy Gradient</h4>
+                    <p>Directly optimize the policy function to maximize expected reward without learning value functions.</p>
+                </div>
+                <div class="reference-item">
+                    <h4>Actor-Critic</h4>
+                    <p>Combines policy gradient and value-based methods for faster convergence and better performance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 RL Compiler. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../assets/js/demo.js"></script>
+</body>
+</html>
