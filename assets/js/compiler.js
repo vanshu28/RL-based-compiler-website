@@ -1,286 +1,282 @@
-// Compiler functionality
-const codeEditor = document.getElementById('codeEditor');
-const executeBtn = document.getElementById('executeBtn');
-const clearBtn = document.getElementById('clearBtn');
-const clearOutputBtn = document.getElementById('clearOutputBtn');
-const output = document.getElementById('output');
+console.log("Compiler JS Loaded");
 
-// Code Templates
-const codeTemplates = {
-    qlearning: `// Q-Learning Algorithm
-class QLearningAgent {
-    constructor(nStates, nActions, learningRate = 0.1, discountFactor = 0.95) {
-        this.nStates = nStates;
-        this.nActions = nActions;
-        this.learningRate = learningRate;
-        this.discountFactor = discountFactor;
-        this.qTable = {};
-        
-        // Initialize Q-table
-        for (let i = 0; i < nStates; i++) {
-            this.qTable[i] = Array(nActions).fill(0);
-        }
-    }
-    
-    selectAction(state, epsilon = 0.1) {
-        if (Math.random() < epsilon) {
-            // Exploration: random action
-            return Math.floor(Math.random() * this.nActions);
-        } else {
-            // Exploitation: best action
-            return this.qTable[state].indexOf(Math.max(...this.qTable[state]));
-        }
-    }
-    
-    updateQValue(state, action, reward, nextState) {
-        const currentQ = this.qTable[state][action];
-        const maxNextQ = Math.max(...this.qTable[nextState]);
-        const newQ = currentQ + this.learningRate * (reward + this.discountFactor * maxNextQ - currentQ);
-        this.qTable[state][action] = newQ;
-    }
-    
-    train(episodes = 100) {
-        console.log('Training Q-Learning Agent...');
-        for (let i = 0; i < episodes; i++) {
-            let state = Math.floor(Math.random() * this.nStates);
-            let totalReward = 0;
-            
-            for (let step = 0; step < 10; step++) {
-                const action = this.selectAction(state, 0.1);
-                const nextState = Math.floor(Math.random() * this.nStates);
-                const reward = nextState === this.nStates - 1 ? 10 : -1;
-                
-                this.updateQValue(state, action, reward, nextState);
-                totalReward += reward;
-                state = nextState;
-            }
-            
-            if ((i + 1) % 20 === 0) {
-                console.log(\`Episode \${i + 1}: Total Reward = \${totalReward}\`);
-            }
-        }
-        console.log('Training Complete!');
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function showOutput(message, isError = false) {
+    const outputBox = document.getElementById("output");
+    const className = isError ? "error" : "info";
+    outputBox.innerHTML = `<pre class="${className}">${escapeHtml(message)}</pre>`;
+}
+
+function clearSuggestions() {
+    const suggestionBox = document.getElementById("suggestionBox");
+    const suggestionList = document.getElementById("suggestionList");
+
+    if (suggestionBox && suggestionList) {
+        suggestionList.innerHTML = "";
+        suggestionBox.classList.add("hidden");
     }
 }
 
-// Create and train agent
-const agent = new QLearningAgent(10, 4);
-agent.train(100);
-console.log('Q-Table Sample:', agent.qTable[0]);`,
+function showSuggestions(errorMessage) {
+    const suggestionBox = document.getElementById("suggestionBox");
+    const suggestionList = document.getElementById("suggestionList");
 
-    sarsa: `// SARSA Algorithm (State-Action-Reward-State-Action)
-class SARSAAgent {
-    constructor(nStates, nActions, learningRate = 0.1, discountFactor = 0.95) {
-        this.nStates = nStates;
-        this.nActions = nActions;
-        this.learningRate = learningRate;
-        this.discountFactor = discountFactor;
-        this.qTable = {};
-        
-        for (let i = 0; i < nStates; i++) {
-            this.qTable[i] = Array(nActions).fill(0);
-        }
-    }
-    
-    selectAction(state, epsilon = 0.1) {
-        if (Math.random() < epsilon) {
-            return Math.floor(Math.random() * this.nActions);
-        } else {
-            return this.qTable[state].indexOf(Math.max(...this.qTable[state]));
-        }
-    }
-    
-    updateQValue(state, action, reward, nextState, nextAction) {
-        const currentQ = this.qTable[state][action];
-        const nextQ = this.qTable[nextState][nextAction];
-        const newQ = currentQ + this.learningRate * (reward + this.discountFactor * nextQ - currentQ);
-        this.qTable[state][action] = newQ;
-    }
-    
-    train(episodes = 100) {
-        console.log('Training SARSA Agent...');
-        for (let i = 0; i < episodes; i++) {
-            let state = Math.floor(Math.random() * this.nStates);
-            let action = this.selectAction(state);
-            let totalReward = 0;
-            
-            for (let step = 0; step < 10; step++) {
-                const nextState = Math.floor(Math.random() * this.nStates);
-                const reward = nextState === this.nStates - 1 ? 10 : -1;
-                const nextAction = this.selectAction(nextState);
-                
-                this.updateQValue(state, action, reward, nextState, nextAction);
-                totalReward += reward;
-                
-                state = nextState;
-                action = nextAction;
-            }
-            
-            if ((i + 1) % 20 === 0) {
-                console.log(\`Episode \${i + 1}: Total Reward = \${totalReward}\`);
-            }
-        }
-        console.log('Training Complete!');
-    }
-}
-
-const agent = new SARSAAgent(10, 4);
-agent.train(100);`,
-
-    'policy-gradient': `// Policy Gradient Algorithm with Softmax
-class PolicyGradientAgent {
-    constructor(nStates, nActions, learningRate = 0.01) {
-        this.nStates = nStates;
-        this.nActions = nActions;
-        this.learningRate = learningRate;
-        this.policy = {};
-        
-        for (let i = 0; i < nStates; i++) {
-            this.policy[i] = Array(nActions).fill(1 / nActions);
-        }
-    }
-    
-    softmax(logits) {
-        const max = Math.max(...logits);
-        const expLogits = logits.map(l => Math.exp(l - max));
-        const sumExp = expLogits.reduce((a, b) => a + b, 0);
-        return expLogits.map(x => x / sumExp);
-    }
-    
-    selectAction(state) {
-        const probabilities = this.policy[state];
-        const rand = Math.random();
-        let sum = 0;
-        
-        for (let i = 0; i < probabilities.length; i++) {
-            sum += probabilities[i];
-            if (rand < sum) return i;
-        }
-        return probabilities.length - 1;
-    }
-    
-    updatePolicy(state, action, reward) {
-        const logits = this.policy[state].map(p => Math.log(p + 1e-10));
-        const probs = this.softmax(logits);
-        
-        for (let a = 0; a < this.nActions; a++) {
-            if (a === action) {
-                probs[a] += this.learningRate * reward;
-            } else {
-                probs[a] -= this.learningRate * reward / (this.nActions - 1);
-            }
-        }
-        
-        const sum = probs.reduce((a, b) => a + b, 0);
-        this.policy[state] = probs.map(p => Math.max(p / sum, 0.01));
-    }
-    
-    train(episodes = 100) {
-        console.log('Training Policy Gradient Agent...');
-        for (let i = 0; i < episodes; i++) {
-            let state = Math.floor(Math.random() * this.nStates);
-            const action = this.selectAction(state);
-            const nextState = Math.floor(Math.random() * this.nStates);
-            const reward = nextState === this.nStates - 1 ? 10 : -1;
-            
-            this.updatePolicy(state, action, reward);
-            
-            if ((i + 1) % 25 === 0) {
-                console.log(\`Episode \${i + 1}: Policy Updated\`);
-            }
-        }
-        console.log('Policy Gradient Training Complete!');
-    }
-}
-
-const agent = new PolicyGradientAgent(10, 4);
-agent.train(100);`
-};
-
-// Execute Code
-executeBtn.addEventListener('click', () => {
-    const code = codeEditor.value;
-    
-    if (!code.trim()) {
-        addOutput('Error: Code is empty!', 'error');
+    if (!suggestionBox || !suggestionList) {
         return;
     }
-    
-    clearOutput();
-    addOutput('Executing code...', 'info');
-    
-    try {
-        // Capture console output
-        const originalLog = console.log;
-        const originalError = console.error;
-        const originalWarn = console.warn;
-        
-        console.log = function(...args) {
-            addOutput(args.join(' '), 'success');
-            originalLog(...args);
-        };
-        
-        console.error = function(...args) {
-            addOutput('Error: ' + args.join(' '), 'error');
-            originalError(...args);
-        };
-        
-        console.warn = function(...args) {
-            addOutput('Warning: ' + args.join(' '), 'warning');
-            originalWarn(...args);
-        };
-        
-        // Execute code
-        eval(code);
-        
-        // Restore console
-        console.log = originalLog;
-        console.error = originalError;
-        console.warn = originalWarn;
-        
-        addOutput('Execution completed successfully!', 'success');
-    } catch (error) {
-        addOutput('Error: ' + error.message, 'error');
-        console.log = originalLog;
-        console.error = originalError;
-        console.warn = originalWarn;
+
+    const suggestions = [];
+    const message = String(errorMessage || "").toLowerCase();
+
+    if (message.includes("syntaxerror") || message.includes("unexpected") || message.includes("invalid syntax")) {
+        suggestions.push("Check your brackets, quotes, and indentation.");
+        suggestions.push("Make sure each block starts and ends correctly.");
     }
-});
 
-// Clear Editor
-clearBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to clear the code?')) {
-        codeEditor.value = '';
+    if (message.includes("nameerror")) {
+        suggestions.push("Verify that the variable or function was defined before you use it.");
     }
-});
 
-// Clear Output
-clearOutputBtn.addEventListener('click', () => {
-    clearOutput();
-});
+    if (message.includes("indentation") || message.includes("unexpected indent")) {
+        suggestions.push("Fix the indentation with consistent spaces or tabs.");
+    }
 
-// Helper functions
-function clearOutput() {
-    output.innerHTML = '';
+    if (message.includes("modulenotfounderror") || message.includes("import")) {
+        suggestions.push("Make sure the module is installed and the import name is correct.");
+    }
+
+    if (message.includes("typeerror") || message.includes("attributeerror")) {
+        suggestions.push("Check the data type and whether the object actually has that attribute.");
+    }
+
+    if (message.includes("connect") || message.includes("failed to fetch") || message.includes("unable to connect")) {
+        suggestions.push("Start the backend server with: cd backend then npm start.");
+    }
+
+    if (suggestions.length === 0) {
+        suggestions.push("Try simplifying the code and running it in smaller steps.");
+    }
+
+    suggestionList.innerHTML = suggestions
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+    suggestionBox.classList.remove("hidden");
 }
 
-function addOutput(text, type = 'info') {
-    const p = document.createElement('p');
-    p.className = type;
-    p.textContent = text;
-    output.appendChild(p);
-    output.scrollTop = output.scrollHeight;
-}
+function initializeCompiler() {
+    const executeBtn = document.getElementById("executeBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const clearOutputBtn = document.getElementById("clearOutputBtn");
 
-// Load templates
-function loadTemplate(templateName) {
-    if (codeTemplates[templateName]) {
-        codeEditor.value = codeTemplates[templateName];
-        clearOutput();
-        addOutput('Template loaded: ' + templateName.toUpperCase(), 'success');
+    const codeEditor = document.getElementById("codeEditor");
+    const outputBox = document.getElementById("output");
+
+    if (!executeBtn || !clearBtn || !clearOutputBtn || !codeEditor || !outputBox) {
+        console.warn("Compiler UI elements not found yet.");
+        return;
     }
+
+    const apiClient = window.api || {
+        async executeCode(code) {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/api/compiler/execute", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ code })
+                });
+
+                const text = await response.text();
+
+                if (!response.ok) {
+                    return {
+                        success: false,
+                        error: text || `Server responded with status ${response.status}`
+                    };
+                }
+
+                if (!text) {
+                    return { success: false, error: "No response from server." };
+                }
+
+                try {
+                    return JSON.parse(text);
+                } catch (error) {
+                    return { success: false, error: text };
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    error: `Unable to connect to the backend. Start it with: cd backend && npm start. (${error.message})`
+                };
+            }
+        }
+    };
+
+
+    // Execute Code
+    executeBtn.addEventListener("click", async () => {
+
+        console.log("Execute button clicked");
+
+
+        const code = codeEditor.value.trim();
+
+
+        if(code === ""){
+            showOutput("Please write some code!", true);
+            clearSuggestions();
+            return;
+        }
+
+
+        showOutput("Running...");
+        // show resolved API URL for debugging
+        try {
+            const apiUrl = window.RL_COMPILER_API_BASE_URL_RESOLVED || (window.api && window.api.baseURL) || 'unknown';
+            const debugHtml = `Calling: ${apiUrl}/compiler/execute\n\nRunning...`;
+            outputBox.innerHTML = `<pre class="info">${escapeHtml(debugHtml)}</pre>`;
+        } catch (e) {
+            // ignore
+        }
+        clearSuggestions();
+
+
+        try {
+            console.log("API call started");
+
+            const result = await apiClient.executeCode(code);
+
+
+            console.log("API result received:", result);
+
+
+
+            if (result.success) {
+                const messages = Array.isArray(result.output)
+                    ? result.output.map(item => item?.message ?? item).filter(Boolean)
+                    : [result.output];
+
+                const outputText = messages.join("\n") || "Program executed successfully.";
+                showOutput(outputText, false);
+                clearSuggestions();
+            } else {
+                 const errorMessage = result.error || result.message || "Execution failed.";
+                 const lastAttempt = window.RL_COMPILER_API_LAST_ATTEMPT || window.RL_COMPILER_API_BASE_URL_RESOLVED || 'unknown';
+                 const combined = `Attempted: ${lastAttempt}\n\nError: ${errorMessage}`;
+                 showOutput(combined, true);
+                 showSuggestions(errorMessage);
+            }
+
+
+
+        }
+        catch(error){
+            console.log("ERROR:", error);
+            const errorMessage = `Server connection failed.\nStart the backend first with:\ncd backend\nnpm start\n\n${error.message || error}`;
+            showOutput(errorMessage, true);
+            showSuggestions(errorMessage);
+        }
+
+
+    });
+
+
+
+    // Clear Editor
+
+    clearBtn.addEventListener("click",()=>{
+
+        codeEditor.value="";
+        clearSuggestions();
+
+    });
+
+
+
+    // Clear Output
+
+    clearOutputBtn.addEventListener("click",()=>{
+
+
+        outputBox.innerHTML = `
+
+        <p class="info">
+        Execute code to see output...
+        </p>
+
+        `;
+        clearSuggestions();
+
+    });
+
+
 }
 
-// Initialize
-addOutput('RL Compiler Ready!', 'info');
-addOutput('Choose a template or write your own code', 'info');
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeCompiler);
+} else {
+    initializeCompiler();
+}
+
+window.addEventListener("load", initializeCompiler);
+
+// Templates
+
+function loadTemplate(type){
+
+
+    const editor = document.getElementById("codeEditor");
+
+
+
+    if(type==="qlearning"){
+
+
+        editor.value =
+`print("Q Learning Started")
+
+q_table = {}
+
+print(q_table)`;
+
+
+    }
+
+
+
+    if(type==="sarsa"){
+
+
+        editor.value =
+`state = "start"
+
+print("Current state:", state)`;
+
+
+    }
+
+
+
+    if(type==="policy-gradient"){
+
+
+        editor.value =
+`reward = 100
+
+print("Reward:", reward)`;
+
+
+    }
+
+
+}

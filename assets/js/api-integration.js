@@ -1,145 +1,57 @@
-// Update compiler.html to use API client
-// Add this line to compiler.html head:
-// <script src="../assets/js/api-client.js"></script>
+// Frontend API client — try multiple local backend URLs and expose debug info.
+const DEFAULT_HOST = window.location.hostname || 'localhost';
+const CANDIDATE_BASES = [
+    (window.RL_COMPILER_API_BASE_URL || '').replace(/\/$/, ''),
+    `http://${DEFAULT_HOST}:5000/api`,
+    'http://127.0.0.1:5000/api',
+    'http://localhost:5000/api'
+].filter(Boolean);
 
-// Updated execute code with API
-function executeCodeWithAPI() {
-    const code = codeEditor.value;
-    
-    if (!code.trim()) {
-        addOutput('Error: Code is empty!', 'error');
-        return;
-    }
-    
-    clearOutput();
-    addOutput('Executing code on server...', 'info');
-    
-    // Call backend API
-    api.executeCode(code, 5000)
-        .then(result => {
-            if (result.success) {
-                result.output.forEach(line => {
-                    addOutput(line.message, line.level);
-                });
-                addOutput('Execution completed successfully!', 'success');
-            } else {
-                addOutput('Error: ' + result.error, 'error');
-            }
-        })
-        .catch(error => {
-            addOutput('Network Error: ' + error.message, 'error');
-        });
-}
+window.RL_COMPILER_API_BASE_URL_RESOLVED = null; // successful base
+window.RL_COMPILER_API_LAST_ATTEMPT = null; // last attempted URL
 
-// Validate code with API
-function validateCodeWithAPI() {
-    const code = codeEditor.value;
-    
-    api.validateCode(code)
-        .then(result => {
-            if (result.valid) {
-                addOutput('✓ Code syntax is valid!', 'success');
-            } else {
-                result.errors.forEach(err => {
-                    addOutput('✗ ' + err, 'error');
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Validation error:', error);
-        });
-}
-
-// Save code to user profile
-function saveCodeToProfile() {
-    const userId = localStorage.getItem('userId');
-    const title = prompt('Enter code snippet title:');
-    const description = prompt('Enter description (optional):');
-    
-    if (!userId) {
-        alert('Please login first to save code');
-        return;
-    }
-    
-    if (!title) return;
-    
-    const code = codeEditor.value;
-    
-    api.saveCode(userId, title, code, description || '')
-        .then(result => {
-            if (result.success) {
-                addOutput('✓ Code saved successfully!', 'success');
-            } else {
-                addOutput('Error saving code: ' + result.error, 'error');
-            }
-        });
-}
-
-// Load all demos from API
-async function loadAllDemos() {
-    try {
-        const result = await api.getAllDemos();
-        if (result.success) {
-            console.log('Available Demos:', result.demos);
-            return result.demos;
+async function tryFetchFromCandidates(path, options) {
+    let lastError = null;
+    for (const base of CANDIDATE_BASES) {
+        const url = `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+        try {
+            window.RL_COMPILER_API_LAST_ATTEMPT = url;
+            const resp = await fetch(url, options);
+            window.RL_COMPILER_API_BASE_URL_RESOLVED = base;
+            return resp;
+        } catch (err) {
+            lastError = err;
+            // try next
         }
-    } catch (error) {
-        console.error('Error loading demos:', error);
     }
+    throw lastError || new Error('No candidate URLs responded');
 }
 
-// Load all algorithms from API
-async function loadAllAlgorithms() {
-    try {
-        const result = await api.getAllAlgorithms();
-        if (result.success) {
-            console.log('Available Algorithms:', result.algorithms);
-            return result.algorithms;
+window.api = {
+    async executeCode(code) {
+        try {
+            const response = await tryFetchFromCandidates('compiler/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+
+            const text = await response.text();
+            if (!response.ok) return { success: false, error: text || `Server responded ${response.status}` };
+            if (!text) return { success: false, error: 'No response from server.' };
+            try { return JSON.parse(text); } catch (err) { return { success: false, error: text }; }
+        } catch (err) {
+            return { success: false, error: `Unable to connect to the backend. Start it with: cd backend && npm start. (${err.message})` };
         }
-    } catch (error) {
-        console.error('Error loading algorithms:', error);
-    }
-}
+    },
 
-// User login
-async function userLogin(email, password) {
-    try {
-        const result = await api.login(email, password);
-        if (result.success) {
-            localStorage.setItem('userId', result.user.id);
-            console.log('Login successful!');
-            return true;
-        } else {
-            console.error('Login failed:', result.error);
-            return false;
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        return false;
-    }
-}
+    async healthCheck() {
+        const resp = await tryFetchFromCandidates('health');
+        return resp.json();
+    },
 
-// Compare algorithms via API
-async function compareAlgorithmsAPI(algorithmList, environment) {
-    try {
-        const result = await api.compareAlgorithms(algorithmList, environment, 1000);
-        if (result.success) {
-            console.log('Algorithm Comparison:', result.comparison);
-            return result.comparison;
-        }
-    } catch (error) {
-        console.error('Comparison error:', error);
+    async getTemplates() {
+        const resp = await tryFetchFromCandidates('compiler/templates');
+        return resp.json();
     }
-}
-
-// Check server health
-async function checkServerHealth() {
-    try {
-        const result = await api.healthCheck();
-        console.log('Server Status:', result.status);
-        return result.status === 'Server is running';
-    } catch (error) {
-        console.error('Server is not responding');
-        return false;
-    }
-}
+};

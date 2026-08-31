@@ -1,6 +1,6 @@
 // API Client for RL Compiler Backend
 class APIClient {
-    constructor(baseURL = 'http://localhost:5000/api') {
+    constructor(baseURL = 'http://127.0.0.1:5000/api') {
         this.baseURL = baseURL;
         this.token = localStorage.getItem('authToken') || null;
     }
