@@ -1,18 +1,25 @@
+
 FROM node:18-alpine
 
+# Install Python 3
+RUN apk add --no-cache python3
+
+# Backend working directory
 WORKDIR /app/backend
 
-# Copy package files
-COPY package*.json ./
+# Copy backend package files
+COPY backend/package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install Node dependencies
+RUN npm install --omit=dev
 
-# Copy backend code
+# Copy complete project
 COPY . .
 
-# Expose port
-EXPOSE 5000
+# Render port
+ENV NODE_ENV=production
 
-# Start server
+EXPOSE 10000
+
+# Start backend
 CMD ["npm", "start"]
