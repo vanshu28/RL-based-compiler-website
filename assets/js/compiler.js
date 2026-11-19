@@ -1,5 +1,7 @@
 console.log("Compiler JS Loaded");
 
+let compilerInitialized = false;
+
 function escapeHtml(value) {
     return String(value)
         .replace(/&/g, "&amp;")
@@ -72,6 +74,10 @@ function showSuggestions(errorMessage) {
 }
 
 function initializeCompiler() {
+    if (compilerInitialized) {
+        return;
+    }
+
     const executeBtn = document.getElementById("executeBtn");
     const clearBtn = document.getElementById("clearBtn");
     const clearOutputBtn = document.getElementById("clearOutputBtn");
@@ -84,142 +90,60 @@ function initializeCompiler() {
         return;
     }
 
-    const apiClient = window.api || {
-        async executeCode(code) {
-            try {
-                const response = await fetch("http://127.0.0.1:5000/api/compiler/execute", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ code })
-                });
-
-                const text = await response.text();
-
-                if (!response.ok) {
-                    return {
-                        success: false,
-                        error: text || `Server responded with status ${response.status}`
-                    };
-                }
-
-                if (!text) {
-                    return { success: false, error: "No response from server." };
-                }
-
-                try {
-                    return JSON.parse(text);
-                } catch (error) {
-                    return { success: false, error: text };
-                }
-            } catch (error) {
-                return {
-                    success: false,
-                    error: `Unable to connect to the backend. Start it with: cd backend && npm start. (${error.message})`
-                };
-            }
-        }
-    };
-
+    compilerInitialized = true;
 
     // Execute Code
     executeBtn.addEventListener("click", async () => {
-
-        console.log("Execute button clicked");
-
-
         const code = codeEditor.value.trim();
 
-
-        if(code === ""){
-            showOutput("Please write some code!", true);
+        if (code === "") {
+            showOutput("Please write some code before executing.", true);
             clearSuggestions();
             return;
         }
 
-
         showOutput("Running...");
-        // show resolved API URL for debugging
-        try {
-            const apiUrl = window.RL_COMPILER_API_BASE_URL_RESOLVED || (window.api && window.api.baseURL) || 'unknown';
-            const debugHtml = `Calling: ${apiUrl}/compiler/execute\n\nRunning...`;
-            outputBox.innerHTML = `<pre class="info">${escapeHtml(debugHtml)}</pre>`;
-        } catch (e) {
-            // ignore
-        }
         clearSuggestions();
-
+        executeBtn.disabled = true;
 
         try {
-            console.log("API call started");
+            if (!window.api || typeof window.api.executeCode !== "function") {
+                throw new Error("Compiler API client is unavailable. Reload the page and try again.");
+            }
 
-            const result = await apiClient.executeCode(code);
-
-
-            console.log("API result received:", result);
-
-
+            const result = await window.api.executeCode(code);
 
             if (result.success) {
                 const messages = Array.isArray(result.output)
-                    ? result.output.map(item => item?.message ?? item).filter(Boolean)
+                    ? result.output.map(item => item && typeof item === "object" ? item.message : item).filter(Boolean)
                     : [result.output];
 
                 const outputText = messages.join("\n") || "Program executed successfully.";
                 showOutput(outputText, false);
                 clearSuggestions();
             } else {
-                 const errorMessage = result.error || result.message || "Execution failed.";
-                 const lastAttempt = window.RL_COMPILER_API_LAST_ATTEMPT || window.RL_COMPILER_API_BASE_URL_RESOLVED || 'unknown';
-                 const combined = `Attempted: ${lastAttempt}\n\nError: ${errorMessage}`;
-                 showOutput(combined, true);
-                 showSuggestions(errorMessage);
+                const errorMessage = result.error || result.message || "Execution failed.";
+                showOutput(errorMessage, true);
+                showSuggestions(errorMessage);
             }
-
-
-
-        }
-        catch(error){
-            console.log("ERROR:", error);
-            const errorMessage = `Server connection failed.\nStart the backend first with:\ncd backend\nnpm start\n\n${error.message || error}`;
+        } catch (error) {
+            const errorMessage = error.message || String(error);
             showOutput(errorMessage, true);
             showSuggestions(errorMessage);
+        } finally {
+            executeBtn.disabled = false;
         }
-
-
     });
 
-
-
-    // Clear Editor
-
-    clearBtn.addEventListener("click",()=>{
-
+    clearBtn.addEventListener("click", () => {
         codeEditor.value="";
         clearSuggestions();
-
     });
 
-
-
-    // Clear Output
-
-    clearOutputBtn.addEventListener("click",()=>{
-
-
-        outputBox.innerHTML = `
-
-        <p class="info">
-        Execute code to see output...
-        </p>
-
-        `;
+    clearOutputBtn.addEventListener("click", () => {
+        outputBox.innerHTML = '<p class="info">Execute code to see output...</p>';
         clearSuggestions();
-
     });
-
-
 }
 
 if (document.readyState === "loading") {
@@ -227,8 +151,6 @@ if (document.readyState === "loading") {
 } else {
     initializeCompiler();
 }
-
-window.addEventListener("load", initializeCompiler);
 
 // Templates
 

@@ -12,11 +12,11 @@
             <div class="logo">
                 <h1>🤖 RL Compiler</h1>
             </div>
-            <ul class=ox
-            "nav-menu">
+            <ul class="nav-menu">
                 <li><a href="index.html" class="active">Home</a></li>
                 <li><a href="pages/compiler.html">Compiler</a></li>
                 <li><a href="pages/demo.html">Demos</a></li>
+                <li><a href="pages/training.html">Training</a></li>
                 <li><a href="#about">About</a></li>
             </ul>
         </div>
@@ -29,7 +29,9 @@
             <div class="hero-buttons">
                 <a href="pages/compiler.html" class="btn btn-primary">Launch Compiler</a>
                 <a href="pages/demo.html" class="btn btn-secondary">View Demos</a>
+                <a href="pages/training.html" class="btn btn-secondary">Training Dashboard</a>
             </div>
+            <p id="backend-status" class="backend-status" role="status">Checking backend connection...</p>
         </div>
     </header>
 
@@ -81,5 +83,30 @@
             <p>&copy; 2026 RL Compiler. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="assets/js/api-integration.js?v=20261119"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', async () => {
+            const status = document.getElementById('backend-status');
+            if (!window.api || typeof window.api.healthCheck !== 'function') {
+                status.textContent = 'Backend connection unavailable';
+                status.className = 'backend-status backend-status-offline';
+                return;
+            }
+
+            try {
+                const data = await window.api.healthCheck();
+                if (data.status === 'Server is running') {
+                    status.textContent = 'Backend connected';
+                    status.className = 'backend-status backend-status-online';
+                } else {
+                    throw new Error(data.error || data.message || 'Unexpected backend response');
+                }
+            } catch (error) {
+                status.textContent = 'Backend not connected — start it with: cd backend && npm start';
+                status.className = 'backend-status backend-status-offline';
+            }
+        });
+    </script>
 </body>
 </html>

@@ -83,11 +83,22 @@ npm start      # Production mode
 
 **Backend will run at:** `http://localhost:5000`
 
+The backend also serves the website, so you can open `http://localhost:5000` to use the frontend and API from the same origin. If you use VS Code Live Server or open the pages separately, the frontend connects to the backend on port 5000. Compiler execution, demo runs, and algorithm comparisons require the backend to be running.
+
+For a separate frontend and backend deployment, set `window.RL_COMPILER_API_BASE_URL` to the backend API URL before loading `assets/js/api-integration.js`, for example:
+
+```html
+<script>window.RL_COMPILER_API_BASE_URL = 'https://your-backend.example.com/api';</script>
+<script src="assets/js/api-integration.js"></script>
+```
+
+Keep the backend process running with `npm start`; when the frontend is served by that backend, its API requests use the same origin automatically.
+
 #### 4. Open Frontend
 
 ```bash
-# Open index.html in browser
-# or use Live Server in VS Code
+# Recommended: open http://localhost:5000
+# Or open index.html / use Live Server in VS Code
 ```
 
 ---

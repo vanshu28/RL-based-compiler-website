@@ -101,6 +101,25 @@ html {
     flex-wrap: wrap;
 }
 
+.backend-status {
+    margin: 1.25rem auto 0;
+    width: fit-content;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-size: 0.95rem !important;
+    font-weight: 600;
+}
+
+.backend-status-online {
+    background: rgba(72, 187, 120, 0.18);
+    color: #c6f6d5;
+}
+
+.backend-status-offline {
+    background: rgba(245, 101, 101, 0.18);
+    color: #fed7d7;
+}
+
 /* Buttons */
 .btn {
     display: inline-block;
@@ -481,8 +500,15 @@ html {
         grid-template-columns: 1fr;
     }
 
+    .navbar .container {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
     .nav-menu {
-        gap: 1rem;
+        flex-wrap: wrap;
+        gap: 0.45rem 1rem;
     }
 
     .hero-content h2 {
@@ -508,5 +534,295 @@ html {
     .template-grid,
     .demo-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Training dashboard */
+.training-dashboard {
+    --training-ink: #1f2937;
+    --training-muted: #667085;
+    --training-line: #e3e8e5;
+    --training-green: #16835d;
+    --training-orange: #d47c35;
+    --training-blue: #3974a8;
+    min-height: calc(100vh - 72px);
+    padding: 2.5rem max(20px, calc((100% - 1200px) / 2)) 4rem;
+    background-color: #f3f6f3;
+    background-image: linear-gradient(rgba(31, 41, 55, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(31, 41, 55, 0.025) 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+.training-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    padding: 1.8rem 2rem;
+    color: #fff;
+    background: #202d32;
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(32, 45, 50, 0.12);
+}
+
+.training-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.6rem;
+    color: #a9d9c4;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.training-eyebrow::before {
+    width: 8px;
+    height: 8px;
+    content: "";
+    background: #79d4a8;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(121, 212, 168, 0.14);
+}
+
+.training-heading h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.2;
+}
+
+.training-heading p {
+    margin-top: 0.45rem;
+    color: #bdc8c7;
+    font-size: 0.92rem;
+}
+
+.training-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.training-controls select,
+.training-controls button {
+    min-height: 42px;
+    padding: 0 0.9rem;
+    border: 1px solid #52605f;
+    border-radius: 5px;
+    color: #fff;
+    background: #2c3a3c;
+    font: inherit;
+}
+
+.training-controls select {
+    min-width: 140px;
+}
+
+.training-controls button {
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.training-controls button:hover:not(:disabled) {
+    background: #3b4c4b;
+}
+
+.training-controls .training-run {
+    border-color: #79d4a8;
+    color: #183a2c;
+    background: #a9e1c1;
+}
+
+.training-controls .training-run:hover:not(:disabled) {
+    background: #c1efd3;
+}
+
+.training-controls button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.training-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    margin: 1.1rem 0;
+}
+
+.training-metric {
+    position: relative;
+    min-height: 112px;
+    padding: 1.05rem 1.2rem;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--training-line);
+    border-radius: 6px;
+    box-shadow: 0 3px 12px rgba(31, 41, 55, 0.035);
+    animation: training-enter 420ms both;
+}
+
+.training-metric:nth-child(2) { animation-delay: 55ms; }
+.training-metric:nth-child(3) { animation-delay: 110ms; }
+.training-metric:nth-child(4) { animation-delay: 165ms; }
+
+.training-metric::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    content: "";
+    background: var(--metric-accent, var(--training-green));
+}
+
+.training-metric:nth-child(2) { --metric-accent: var(--training-blue); }
+.training-metric:nth-child(3) { --metric-accent: var(--training-orange); }
+.training-metric:nth-child(4) { --metric-accent: #72834d; }
+
+.training-metric span {
+    display: block;
+    color: var(--training-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+}
+
+.training-metric strong {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--training-ink);
+    font-size: 1.8rem;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+.training-section-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0 0.75rem;
+    color: var(--training-ink);
+    font-size: 0.83rem;
+    font-weight: 700;
+}
+
+.training-section-label span:last-child {
+    color: var(--training-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.training-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.training-chart-card {
+    min-width: 0;
+    padding: 1rem 1.15rem 0.85rem;
+    background: #fff;
+    border: 1px solid var(--training-line);
+    border-radius: 6px;
+    box-shadow: 0 3px 12px rgba(31, 41, 55, 0.035);
+}
+
+.training-chart-card--wide {
+    grid-column: 1 / -1;
+}
+
+.training-chart-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.training-chart-title h3 {
+    color: var(--training-ink);
+    font-size: 0.95rem;
+}
+
+.training-chart-title span {
+    color: var(--training-muted);
+    font-size: 0.74rem;
+}
+
+.training-chart-wrap {
+    position: relative;
+    height: 238px;
+}
+
+.training-chart-card--wide .training-chart-wrap {
+    height: 270px;
+}
+
+.training-note {
+    margin-top: 1rem;
+    color: #687571;
+    font-size: 0.76rem;
+}
+
+@keyframes training-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .training-dashboard {
+        padding: 1.1rem 14px 2.5rem;
+    }
+
+    .training-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1.2rem;
+        padding: 1.35rem;
+    }
+
+    .training-controls {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .training-controls select {
+        flex: 1 1 100%;
+    }
+
+    .training-controls button {
+        flex: 1;
+    }
+
+    .training-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+    }
+
+    .training-metric {
+        min-height: 98px;
+        padding: 0.85rem;
+    }
+
+    .training-metric strong {
+        font-size: 1.55rem;
+    }
+
+    .training-chart-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .training-chart-card--wide {
+        grid-column: auto;
+    }
+
+    .training-chart-wrap,
+    .training-chart-card--wide .training-chart-wrap {
+        height: 220px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .training-metric {
+        animation: none;
     }
 }

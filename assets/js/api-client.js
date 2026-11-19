@@ -17,7 +17,7 @@ class APIClient {
             'Content-Type': 'application/json'
         };
         if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+            headers['Authorization'] = 'Bearer ' + this.token;
         }
         return headers;
     }

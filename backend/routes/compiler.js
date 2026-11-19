@@ -3,6 +3,7 @@ const router = express.Router();
 const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 
 // ===========================
 // Execute Python Code
@@ -18,10 +19,8 @@ router.post("/execute", (req, res) => {
         });
     }
 
-    const tempDir = path.join(__dirname, "..", "temp");
-    fs.mkdirSync(tempDir, { recursive: true });
-
-    const filePath = path.join(tempDir, `run-${Date.now()}-${Math.random().toString(16).slice(2)}.py`);
+    const tempDir = os.tmpdir();
+    const filePath = path.join(tempDir, `rl-compiler-run-${Date.now()}-${Math.random().toString(16).slice(2)}.py`);
 
     try {
         fs.writeFileSync(filePath, code, "utf8");

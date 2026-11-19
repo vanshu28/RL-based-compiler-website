@@ -188,6 +188,8 @@ Content-Type: application/json
 
 ---
 
+> **Note:** Demo runs and algorithm comparisons currently return simulated metrics; they are API-connected but do not train a live reinforcement-learning model.
+
 ### 3. Algorithm API
 
 #### Get All Algorithms
@@ -486,4 +488,3 @@ Monitor backend with:
 3. Use in controllers/routes
 
 ---
-

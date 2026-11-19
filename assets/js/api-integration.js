@@ -1,27 +1,55 @@
-// Frontend API client — try multiple local backend URLs and expose debug info.
+// Frontend API client — try configured and local backend URLs.
 const DEFAULT_HOST = window.location.hostname || 'localhost';
+const CONFIGURED_BACKEND = (window.RL_COMPILER_API_BASE_URL || '').replace(/\/$/, '');
+const SAME_ORIGIN_BACKEND = /^https?:$/.test(window.location.protocol)
+    ? `${window.location.origin}/api`
+    : '';
 const CANDIDATE_BASES = [
-    (window.RL_COMPILER_API_BASE_URL || '').replace(/\/$/, ''),
+    CONFIGURED_BACKEND,
+    SAME_ORIGIN_BACKEND,
     `http://${DEFAULT_HOST}:5000/api`,
     'http://127.0.0.1:5000/api',
     'http://localhost:5000/api'
-].filter(Boolean);
+].filter((base, index, bases) => base && bases.indexOf(base) === index);
 
 window.RL_COMPILER_API_BASE_URL_RESOLVED = null; // successful base
 window.RL_COMPILER_API_LAST_ATTEMPT = null; // last attempted URL
 
-async function tryFetchFromCandidates(path, options) {
+async function request(path, options = {}) {
     let lastError = null;
     for (const base of CANDIDATE_BASES) {
         const url = `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+        let receivedResponse = false;
         try {
             window.RL_COMPILER_API_LAST_ATTEMPT = url;
             const resp = await fetch(url, options);
+            receivedResponse = true;
+            const text = await resp.text();
+            let data = null;
+            if (text) {
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    data = { message: text };
+                }
+            }
+            if (!resp.ok) {
+                const error = new Error(data?.error || data?.message || `Server responded ${resp.status}`);
+                const isStaticFrontendOrigin = base === SAME_ORIGIN_BACKEND &&
+                    base !== CONFIGURED_BACKEND &&
+                    window.location.port !== '5000' &&
+                    ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+                if (isStaticFrontendOrigin && resp.status === 404) {
+                    lastError = error;
+                    continue;
+                }
+                throw error;
+            }
             window.RL_COMPILER_API_BASE_URL_RESOLVED = base;
-            return resp;
+            return data;
         } catch (err) {
+            if (receivedResponse) throw err;
             lastError = err;
-            // try next
         }
     }
     throw lastError || new Error('No candidate URLs responded');
@@ -30,28 +58,46 @@ async function tryFetchFromCandidates(path, options) {
 window.api = {
     async executeCode(code) {
         try {
-            const response = await tryFetchFromCandidates('compiler/execute', {
+            const data = await request('compiler/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code })
             });
-
-            const text = await response.text();
-            if (!response.ok) return { success: false, error: text || `Server responded ${response.status}` };
-            if (!text) return { success: false, error: 'No response from server.' };
-            try { return JSON.parse(text); } catch (err) { return { success: false, error: text }; }
+            return data || { success: false, error: 'No response from server.' };
         } catch (err) {
             return { success: false, error: `Unable to connect to the backend. Start it with: cd backend && npm start. (${err.message})` };
         }
     },
 
     async healthCheck() {
-        const resp = await tryFetchFromCandidates('health');
-        return resp.json();
+        return request('health');
     },
 
     async getTemplates() {
-        const resp = await tryFetchFromCandidates('compiler/templates');
-        return resp.json();
+        return request('compiler/templates');
+    },
+
+    async getDemos() {
+        return request('demo');
+    },
+
+    async runDemo(id, episodes) {
+        return request(`demo/${encodeURIComponent(id)}/run`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ episodes })
+        });
+    },
+
+    async getAlgorithms() {
+        return request('algorithm');
+    },
+
+    async compareAlgorithms(algorithms, environment, episodes) {
+        return request('algorithm/compare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ algorithms, environment, episodes })
+        });
     }
 };

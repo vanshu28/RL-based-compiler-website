@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RL Compiler - Training Dashboard</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <h1>🤖 RL Compiler</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="compiler.html">Compiler</a></li>
+                <li><a href="demo.html">Demos</a></li>
+                <li><a href="training.html" class="active">Training</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="training-dashboard">
+        <section class="training-heading" aria-labelledby="training-title">
+            <div>
+                <span class="training-eyebrow" id="training-status">Ready</span>
+                <h2 id="training-title">Algorithm comparison</h2>
+                <p id="training-description">Q-Learning comparison across 1,000 episodes</p>
+            </div>
+            <div class="training-controls" aria-label="Training controls">
+                <select id="algorithm-select" aria-label="Select algorithm">
+                    <option value="qlearning">Q-Learning</option>
+                    <option value="sarsa">SARSA</option>
+                    <option value="policy">Policy Gradient</option>
+                </select>
+                <button class="training-run" id="training-run" type="button">Run comparison</button>
+                <button id="training-reset" type="button">Reset</button>
+            </div>
+        </section>
+
+        <section class="training-metrics" aria-label="Training summary">
+            <article class="training-metric">
+                <span>Episodes</span>
+                <strong id="metric-episodes">1,000</strong>
+            </article>
+            <article class="training-metric">
+                <span>Avg Reward</span>
+                <strong id="metric-average">87.4</strong>
+            </article>
+            <article class="training-metric">
+                <span>Computation Time</span>
+                <strong id="metric-computation">—</strong>
+            </article>
+            <article class="training-metric">
+                <span>Convergence Episode</span>
+                <strong id="metric-convergence">—</strong>
+            </article>
+        </section>
+
+        <div class="training-section-label">
+            <span>Learning curves</span>
+            <span id="chart-progress">Run a comparison to load backend metrics</span>
+        </div>
+
+        <section class="training-chart-grid" aria-label="Training charts">
+            <article class="training-chart-card training-chart-card--wide">
+                <div class="training-chart-title">
+                    <h3>Comparison Result: Average Reward</h3>
+                    <span>Average reward</span>
+                </div>
+                <div class="training-chart-wrap"><canvas id="reward-chart" aria-label="Reward by episode" role="img"></canvas></div>
+            </article>
+            <article class="training-chart-card">
+                <div class="training-chart-title">
+                    <h3>Comparison Result: Computation Time</h3>
+                    <span>Backend-reported units</span>
+                </div>
+                <div class="training-chart-wrap"><canvas id="time-chart" aria-label="Execution time by episode" role="img"></canvas></div>
+            </article>
+            <article class="training-chart-card">
+                <div class="training-chart-title">
+                    <h3>Backend Comparison vs Memory Usage</h3>
+                    <span>Reported by backend</span>
+                </div>
+                <div class="training-chart-wrap"><canvas id="memory-chart" aria-label="Memory usage reported by backend" role="img"></canvas></div>
+            </article>
+        </section>
+        <p class="training-note">Results are returned by the backend comparison endpoint. The backend currently simulates comparison metrics rather than training a live model.</p>
+    </main>
+
+    <footer class="footer">
+        <div class="container"><p>&copy; 2026 RL Compiler. All rights reserved.</p></div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="../assets/js/api-integration.js?v=20261119"></script>
+    <script src="../assets/js/training-dashboard.js"></script>
+</body>
+</html>
